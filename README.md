@@ -16,3 +16,6 @@
 2. `mkdir build && cd build`
 3. `cmake .. && make`
 4. `./lane_change`.
+
+## Reference
+[Udacity Path Planning Project](https://github.com/udacity/CarND-Path-Planning-Project)
