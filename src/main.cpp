@@ -66,22 +66,24 @@ int main() {
                     double car_y = j[1]["y"];
                     double car_s = j[1]["s"];
                     double car_yaw = j[1]["yaw"];
-
                     // Previous path data given to the Planner
                     auto previous_path_x = j[1]["previous_path_x"];
                     auto previous_path_y = j[1]["previous_path_y"];
                     double end_path_s = j[1]["end_path_s"];
-
-                    // Sensor Fusion Data, a list of all other cars on the same side
-                    // of the road.
+                    // Sensor fusion data of surrounding agents
                     auto sensor_fusion = j[1]["sensor_fusion"];
 
                     int prev_size = previous_path_x.size();
-                    map<int, vector<Vehicle>> predictions;
+                    if (prev_size > 0) {
+                        car_s = end_path_s;
+                    }
 
+                    // Predicts the agents trajectory using sensor fusion data
+                    map<int, vector<Vehicle>> predictions;
                     for (auto &i: sensor_fusion) {
                         int v_id = i[0];
                         int v_lane;
+                        // Predicts only for agents on the same direction as ego
                         if (i[6] >= 0 && i[6] <= 12) {
                             v_lane = (int) i[6] / 4;
                         } else {
@@ -96,21 +98,17 @@ int main() {
                         predictions[v_id] = preds;
                     }
 
-                    if (prev_size > 0) {
-                        car_s = end_path_s;
-                    }
                     Vehicle ego(lane, car_s, ref_speed, "KL");
                     vector<Vehicle> trajectory = ego.choose_next_state(predictions);
                     lane = trajectory[1].lane;
 
-                    double max_allowable_speed = ego.get_kinematics(predictions, lane);
-
-                    if (ref_speed < max_allowable_speed) {
+                    if (ref_speed < trajectory[1].speed) {
                         ref_speed += 0.224;
-                    } else if (ref_speed > max_allowable_speed) {
+                    } else if (ref_speed > trajectory[1].speed) {
                         ref_speed -= 0.224;
                     }
 
+                    // Heading waypoints in vehicle frame
                     vector<double> ptsx;
                     vector<double> ptsy;
 
@@ -162,6 +160,9 @@ int main() {
 
                     json msgJson;
 
+                    // Trajectory generated using initial and
+                    // target trajectory from the behavior planner
+                    // Waypoints are transformed back to world frame
                     tk::spline traj;
                     traj.set_points(ptsx, ptsy);
 

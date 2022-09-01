@@ -13,11 +13,9 @@ public:
                                        {"LCR", 1}};
 
     int lane{0};
-
+    // Tangential position in Frenet frame
     double s{0.0};
-
     double speed{0.0};
-
     string state{"KL"};
 
     // Constructor

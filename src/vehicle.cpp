@@ -15,18 +15,19 @@ Vehicle::Vehicle(int lane, double s, double spd, string state) {
 // Destructor
 Vehicle::~Vehicle() = default;
 
+// Predicts the agents' trajectory 10 cycles in future
 vector<Vehicle> Vehicle::generate_predictions() {
     vector<Vehicle> predictions;
 
     for (int i = 0; i < 10; ++i) {
         double next_s = this->s + 0.02 * (double) i * this->speed;
-
         predictions.emplace_back(Vehicle(this->lane, next_s, this->speed, this->state));
     }
 
     return predictions;
 }
 
+// Sets the ego's possible behaviors
 // If state is either "LCL" or "LCR", then just return "KL"
 vector<string> Vehicle::successor_states() {
     vector<string> states;
@@ -40,6 +41,7 @@ vector<string> Vehicle::successor_states() {
     return states;
 }
 
+// Sets the ego's next behavior that maximizes its velocity using cost function
 vector<Vehicle> Vehicle::choose_next_state(const map<int, vector<Vehicle>>& predictions) {
     vector<double> costs;
     vector<vector<Vehicle>> final_traj;
